@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - ExpenseFlow{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h1>Welcome Back</h1>
+            <p>Enter your credentials to access your expense dashboard</p>
+        </div>
+
+        <!-- 1-Click Demo Login Helper -->
+        <div class="demo-login-box">
+            <div class="demo-login-text">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Want to test immediately?
+                <span>Use Demo Credentials: <strong>demo@example.com</strong> / <strong>password123</strong></span>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="fillDemoBtn" style="white-space: nowrap;">
+                Auto Fill
+            </button>
+        </div>
+
+        <form action="{{ url_for('login') }}" method="POST" id="loginForm">
+            <!-- Email Input -->
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div class="input-icon-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required value="{{ request.args.get('email', '') }}">
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <label for="password" style="margin-bottom: 0;">Password</label>
+                </div>
+                <div class="input-icon-wrapper">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <button type="button" id="togglePassword" style="position: absolute; right: 0.85rem; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                        <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Remember & Submit -->
+            <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 1rem;">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to Dashboard
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account yet? <a href="{{ url_for('registation') }}">Create an account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Demo auto-fill button logic
+    const fillDemoBtn = document.getElementById('fillDemoBtn');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    function setDemoCredentials() {
+        if (emailInput && passwordInput) {
+            emailInput.value = 'demo@example.com';
+            passwordInput.value = 'password123';
+        }
+    }
+
+    if (fillDemoBtn) {
+        fillDemoBtn.addEventListener('click', setDemoCredentials);
+    }
+
+    // Auto populate if demo param present in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === '1' || urlParams.get('demo') === 'true') {
+        setDemoCredentials();
+    }
+
+    // Show/Hide password toggle
+    if (togglePasswordBtn) {
+        togglePasswordBtn.addEventListener('click', () => {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        });
+    }
+</script>
+{% endblock %}

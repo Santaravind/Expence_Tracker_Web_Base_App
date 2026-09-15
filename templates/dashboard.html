@@ -1,0 +1,625 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ExpenseFlow{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="dashboard-greeting">
+        <h1>Welcome back, {{ user.name }}! 👋</h1>
+        <p>Manage your daily expenses, monitor your budget health, and analyze spending patterns.</p>
+    </div>
+    <div class="dashboard-actions">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="openModal('budgetModal')">
+            <i class="fa-solid fa-gear"></i> Set Budget
+        </button>
+        <a href="{{ url_for('export_csv') }}" class="btn btn-secondary btn-sm" title="Download transactions as CSV spreadsheet">
+            <i class="fa-solid fa-file-arrow-down"></i> Export CSV
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openModal('addExpenseModal')">
+            <i class="fa-solid fa-plus"></i> Add Expense
+        </button>
+    </div>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="kpi-grid">
+    <!-- Card 1: Total Spent -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Total Spent This Month</span>
+            <div class="kpi-icon" style="background: var(--accent-danger-light); color: var(--accent-danger);">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ user.currency }} {{ "%.2f"|format(monthly_total) }}</div>
+        <div class="kpi-subtext">
+            <span>{{ "%.1f"|format(budget_percent) }}% of monthly budget</span>
+        </div>
+        <div class="kpi-progress">
+            <div class="kpi-progress-bar" style="width: {{ budget_percent if budget_percent <= 100 else 100 }}%; background: {{ 'var(--accent-danger)' if budget_percent > 90 else ('var(--accent-warning)' if budget_percent > 70 else 'var(--accent-success)') }};"></div>
+        </div>
+    </div>
+
+    <!-- Card 2: Budget & Remaining -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Remaining Budget</span>
+            <div class="kpi-icon" style="background: var(--accent-success-light); color: var(--accent-success);">
+                <i class="fa-solid fa-piggy-bank"></i>
+            </div>
+        </div>
+        <div class="kpi-value" style="color: {{ 'var(--accent-danger)' if remaining_budget < 0 else 'var(--accent-success)' }};">
+            {{ user.currency }} {{ "%.2f"|format(remaining_budget) }}
+        </div>
+        <div class="kpi-subtext">
+            <span>Monthly Target: {{ user.currency }} {{ "%.2f"|format(user.monthly_budget) }}</span>
+        </div>
+    </div>
+
+    <!-- Card 3: Total Transactions -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Transactions Count</span>
+            <div class="kpi-icon" style="background: var(--primary-light); color: var(--primary);">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ expenses|length }}</div>
+        <div class="kpi-subtext">
+            <span>Logged in current cycle</span>
+        </div>
+    </div>
+
+    <!-- Card 4: Top Category -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Top Spending Area</span>
+            <div class="kpi-icon" style="background: var(--accent-purple-light); color: var(--accent-purple);">
+                <i class="fa-solid fa-fire"></i>
+            </div>
+        </div>
+        <div class="kpi-value" style="font-size: 1.45rem; text-transform: capitalize;">
+            {{ top_category[0] if top_category else 'None yet' }}
+        </div>
+        <div class="kpi-subtext">
+            <span>{{ user.currency }} {{ "%.2f"|format(top_category[1]) if top_category else '0.00' }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+    <!-- Left Column: Transactions Management -->
+    <div class="dashboard-left">
+        <div class="content-card">
+            <div class="card-header-bar">
+                <div class="card-title">
+                    <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Expense Transactions
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    Showing {{ expenses|length }} entries
+                </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="filter-bar">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="expenseSearchInput" class="search-input" placeholder="Search by title, notes, or payment..." onkeyup="filterExpensesTable()">
+                </div>
+
+                <select id="categoryFilterSelect" class="filter-select" onchange="filterExpensesTable()">
+                    <option value="ALL">All Categories</option>
+                    <option value="Food">Food & Dining</option>
+                    <option value="Rent">Rent & Housing</option>
+                    <option value="Shopping">Shopping & Groceries</option>
+                    <option value="Transport">Transport & Fuel</option>
+                    <option value="Bills">Bills & Utilities</option>
+                    <option value="Health">Health & Fitness</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Others">Others</option>
+                </select>
+
+                <select id="paymentFilterSelect" class="filter-select" onchange="filterExpensesTable()">
+                    <option value="ALL">All Payment Types</option>
+                    <option value="UPI">UPI / Digital</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                    <option value="Net Banking">Net Banking</option>
+                </select>
+            </div>
+
+            <!-- Expense Table -->
+            <div class="table-responsive">
+                <table class="expense-table" id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Payment Mode</th>
+                            <th>Amount</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if expenses %}
+                            {% for exp in expenses %}
+                                <tr class="expense-row" 
+                                    data-title="{{ exp.title|lower }}" 
+                                    data-category="{{ exp.category }}" 
+                                    data-payment="{{ exp.payment_method }}" 
+                                    data-notes="{{ exp.notes|lower if exp.notes else '' }}">
+                                    
+                                    <td style="white-space: nowrap; color: var(--text-muted); font-size: 0.88rem;">
+                                        <i class="fa-regular fa-calendar" style="margin-right: 0.3rem;"></i>
+                                        {{ exp.date }}
+                                    </td>
+
+                                    <td>
+                                        <div style="font-weight: 700; color: var(--text-main);">{{ exp.title }}</div>
+                                        {% if exp.notes %}
+                                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ exp.notes }}</div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% set cat = exp.category|lower %}
+                                        <span class="category-badge cat-{{ cat }}">
+                                            {% if cat == 'food' %}
+                                                <i class="fa-solid fa-utensils"></i>
+                                            {% elif cat == 'rent' %}
+                                                <i class="fa-solid fa-house"></i>
+                                            {% elif cat == 'shopping' %}
+                                                <i class="fa-solid fa-bag-shopping"></i>
+                                            {% elif cat == 'transport' %}
+                                                <i class="fa-solid fa-car"></i>
+                                            {% elif cat == 'bills' %}
+                                                <i class="fa-solid fa-bolt"></i>
+                                            {% elif cat == 'health' %}
+                                                <i class="fa-solid fa-heart-pulse"></i>
+                                            {% elif cat == 'entertainment' %}
+                                                <i class="fa-solid fa-film"></i>
+                                            {% else %}
+                                                <i class="fa-solid fa-tag"></i>
+                                            {% endif %}
+                                            {{ exp.category }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="payment-tag">
+                                            {% if 'card' in exp.payment_method|lower %}
+                                                <i class="fa-solid fa-credit-card"></i>
+                                            {% elif 'upi' in exp.payment_method|lower %}
+                                                <i class="fa-solid fa-mobile-screen"></i>
+                                            {% elif 'cash' in exp.payment_method|lower %}
+                                                <i class="fa-solid fa-money-bill-wave"></i>
+                                            {% else %}
+                                                <i class="fa-solid fa-building-columns"></i>
+                                            {% endif %}
+                                            {{ exp.payment_method }}
+                                        </span>
+                                    </td>
+
+                                    <td class="table-amount">
+                                        - {{ user.currency }} {{ "%.2f"|format(exp.amount) }}
+                                    </td>
+
+                                    <td style="text-align: right;">
+                                        <div class="table-actions" style="justify-content: flex-end;">
+                                            <button type="button" class="action-btn edit-btn" 
+                                                    title="Edit Expense" 
+                                                    onclick="editExpense('{{ exp.id }}', '{{ exp.title|escape }}', '{{ exp.amount }}', '{{ exp.category }}', '{{ exp.payment_method }}', '{{ exp.date }}', '{{ exp.notes|escape if exp.notes else '' }}')">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            
+                                            <form action="{{ url_for('delete_expense', expense_id=exp.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this expense permanently?');">
+                                                <button type="submit" class="action-btn delete-btn" title="Delete Expense">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyTableState">
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-receipt"></i>
+                                        <h3>No expenses recorded yet</h3>
+                                        <p>Click the "Add Expense" button above to log your first transaction.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Visual Breakdown & Quick Insights -->
+    <div class="dashboard-right">
+        <!-- Mini Doughnut Chart Card -->
+        <div class="content-card">
+            <div class="card-header-bar">
+                <div class="card-title">
+                    <i class="fa-solid fa-chart-pie" style="color: var(--secondary);"></i> Category Split
+                </div>
+                <a href="{{ url_for('reports') }}" class="btn btn-outline btn-sm">Full Report &rarr;</a>
+            </div>
+            <div class="card-body">
+                {% if expenses %}
+                    <div style="position: relative; height: 240px;">
+                        <canvas id="categoryDonutChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 1.5rem;">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <p>Chart will appear once expenses are added.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Budget Status Card -->
+        <div class="content-card">
+            <div class="card-header-bar">
+                <div class="card-title">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--accent-success);"></i> Budget Health
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem;">
+                        <span>Monthly Consumption</span>
+                        <span>{{ "%.1f"|format(budget_percent) }}%</span>
+                    </div>
+                    <div class="preview-progress-bar" style="height: 10px;">
+                       <div class="preview-progress-fill"
+     style="width: {{ budget_percent if budget_percent <= 100 else 100 }}%; background: {% if budget_percent > 90 %}#ef4444{% elif budget_percent > 70 %}#f59e0b{% else %}#10b981{% endif %};">
+</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: var(--radius-sm); padding: 0.85rem; font-size: 0.88rem; color: var(--text-muted); border: 1px solid var(--border);">
+                    {% if budget_percent > 90 %}
+                        <strong style="color: var(--accent-danger);"><i class="fa-solid fa-triangle-exclamation"></i> Alert:</strong> You have spent over 90% of your target budget! Consider trimming discretionary spending.
+                    {% elif budget_percent > 70 %}
+                        <strong style="color: var(--accent-warning);"><i class="fa-solid fa-circle-exclamation"></i> Warning:</strong> You have reached 70% of your budget. Spend cautiously for the rest of the month.
+                    {% else %}
+                        <strong style="color: var(--accent-success);"><i class="fa-solid fa-circle-check"></i> Great job!</strong> Your spending is well within your monthly budget limits.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- 1. Add Expense Modal -->
+<div class="modal-overlay" id="addExpenseModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-plus-circle" style="color: var(--primary);"></i> Add New Expense</h3>
+            <button type="button" class="modal-close" onclick="closeModal('addExpenseModal')">&times;</button>
+        </div>
+        <form action="{{ url_for('add_expense') }}" method="POST">
+            <div class="modal-body">
+                <!-- Title -->
+                <div class="form-group">
+                    <label for="add_title">Expense Title / Description *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-tag"></i>
+                        <input type="text" id="add_title" name="title" class="form-control" placeholder="e.g. Grocery shopping, Electricity bill" required>
+                    </div>
+                </div>
+
+                <!-- Amount & Date -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="add_amount">Amount ({{ user.currency }}) *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-coins"></i>
+                            <input type="number" id="add_amount" name="amount" class="form-control" placeholder="0.00" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="add_date">Date *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-calendar"></i>
+                            <input type="date" id="add_date" name="date" class="form-control" required value="{{ current_date }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category & Payment Method -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="add_category">Category *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <select id="add_category" name="category" class="form-control" required style="padding-left: 2.65rem;">
+                                <option value="Food">🍔 Food & Dining</option>
+                                <option value="Rent">🏠 Rent & Housing</option>
+                                <option value="Shopping">🛍️ Shopping & Grocery</option>
+                                <option value="Transport">🚗 Transport & Fuel</option>
+                                <option value="Bills">💡 Bills & Utilities</option>
+                                <option value="Health">💊 Health & Medical</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Others">📦 Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="add_payment">Payment Method *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <select id="add_payment" name="payment_method" class="form-control" required style="padding-left: 2.65rem;">
+                                <option value="UPI">UPI / Digital Wallet</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Net Banking">Net Banking</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes / Tags -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="add_notes">Notes (Optional)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-comment-dots"></i>
+                        <input type="text" id="add_notes" name="notes" class="form-control" placeholder="e.g. Paid via GPay at D-Mart">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addExpenseModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Expense</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 2. Edit Expense Modal -->
+<div class="modal-overlay" id="editExpenseModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> Edit Expense</h3>
+            <button type="button" class="modal-close" onclick="closeModal('editExpenseModal')">&times;</button>
+        </div>
+        <form id="editExpenseForm" action="" method="POST">
+            <div class="modal-body">
+                <!-- Title -->
+                <div class="form-group">
+                    <label for="edit_title">Expense Title / Description *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-tag"></i>
+                        <input type="text" id="edit_title" name="title" class="form-control" required>
+                    </div>
+                </div>
+
+                <!-- Amount & Date -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="edit_amount">Amount ({{ user.currency }}) *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-coins"></i>
+                            <input type="number" id="edit_amount" name="amount" class="form-control" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_date">Date *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-calendar"></i>
+                            <input type="date" id="edit_date" name="date" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category & Payment Method -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="edit_category">Category *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <select id="edit_category" name="category" class="form-control" required style="padding-left: 2.65rem;">
+                                <option value="Food">🍔 Food & Dining</option>
+                                <option value="Rent">🏠 Rent & Housing</option>
+                                <option value="Shopping">🛍️ Shopping & Grocery</option>
+                                <option value="Transport">🚗 Transport & Fuel</option>
+                                <option value="Bills">💡 Bills & Utilities</option>
+                                <option value="Health">💊 Health & Medical</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Others">📦 Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_payment">Payment Method *</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <select id="edit_payment" name="payment_method" class="form-control" required style="padding-left: 2.65rem;">
+                                <option value="UPI">UPI / Digital Wallet</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Net Banking">Net Banking</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes / Tags -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="edit_notes">Notes (Optional)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-comment-dots"></i>
+                        <input type="text" id="edit_notes" name="notes" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editExpenseModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. Update Budget & Currency Modal -->
+<div class="modal-overlay" id="budgetModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-gear" style="color: var(--primary);"></i> Set Budget & Currency</h3>
+            <button type="button" class="modal-close" onclick="closeModal('budgetModal')">&times;</button>
+        </div>
+        <form action="{{ url_for('update_budget') }}" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="set_currency">Currency Preference</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-coins"></i>
+                        <select id="set_currency" name="currency" class="form-control" style="padding-left: 2.65rem;">
+                            <option value="₹" {% if user.currency == '₹' %}selected{% endif %}>₹ INR (India)</option>
+                            <option value="$" {% if user.currency == '$' %}selected{% endif %}>$ USD (United States)</option>
+                            <option value="€" {% if user.currency == '€' %}selected{% endif %}>€ EUR (Europe)</option>
+                            <option value="£" {% if user.currency == '£' %}selected{% endif %}>£ GBP (United Kingdom)</option>
+                            <option value="¥" {% if user.currency == '¥' %}selected{% endif %}>¥ JPY (Japan)</option>
+                            <option value="AED" {% if user.currency == 'AED' %}selected{% endif %}>AED (UAE)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="set_budget">Monthly Budget Limit ({{ user.currency }})</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-bullseye"></i>
+                        <input type="number" id="set_budget" name="monthly_budget" class="form-control" value="{{ user.monthly_budget }}" min="100" step="100" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('budgetModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Modal Helpers
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('active');
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.remove('active');
+    }
+
+    // Close modal when clicking outside box
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+        }
+    });
+
+    // Populate and open edit modal
+    function editExpense(id, title, amount, category, payment, date, notes) {
+        const form = document.getElementById('editExpenseForm');
+        form.action = `/edit-expense/${id}`;
+        
+        document.getElementById('edit_title').value = title;
+        document.getElementById('edit_amount').value = amount;
+        document.getElementById('edit_category').value = category;
+        document.getElementById('edit_payment').value = payment;
+        document.getElementById('edit_date').value = date;
+        document.getElementById('edit_notes').value = notes;
+
+        openModal('editExpenseModal');
+    }
+
+    // Live Table Filtering by Text, Category, and Payment Method
+    function filterExpensesTable() {
+        const searchQuery = document.getElementById('expenseSearchInput').value.toLowerCase();
+        const selectedCat = document.getElementById('categoryFilterSelect').value;
+        const selectedPay = document.getElementById('paymentFilterSelect').value;
+        const rows = document.querySelectorAll('.expense-row');
+
+        rows.forEach(row => {
+            const title = row.getAttribute('data-title');
+            const notes = row.getAttribute('data-notes');
+            const category = row.getAttribute('data-category');
+            const payment = row.getAttribute('data-payment');
+
+            const matchesSearch = title.includes(searchQuery) || notes.includes(searchQuery) || payment.toLowerCase().includes(searchQuery);
+            const matchesCat = (selectedCat === 'ALL') || (category === selectedCat);
+            const matchesPay = (selectedPay === 'ALL') || (payment === selectedPay);
+
+            if (matchesSearch && matchesCat && matchesPay) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize Mini Chart.js Doughnut for Categories
+    {% if category_breakdown %}
+    const catLabels = {{ category_breakdown.keys()|list|tojson }};
+    const catValues = {{ category_breakdown.values()|list|tojson }};
+    
+    const ctx = document.getElementById('categoryDonutChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: [
+                        '#ef4444', '#6366f1', '#ec4899', '#0ea5e9', 
+                        '#f59e0b', '#10b981', '#8b5cf6', '#64748b'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 12,
+                            font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
+                        }
+                    }
+                },
+                cutout: '68%'
+            }
+        });
+    }
+    {% endif %}
+</script>
+{% endblock %}

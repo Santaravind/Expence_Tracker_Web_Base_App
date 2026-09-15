@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}ExpenseFlow - Take Control of Your Daily Expenses & Budget{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-grid">
+        <!-- Hero Left Column: Copy & CTAs -->
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fa-solid fa-sparkles"></i> Simple • Modern • Free
+            </div>
+            <h1 class="hero-title">
+                Smart Expense Tracking for <span>Clear Financial Goals</span>
+            </h1>
+            <p class="hero-subtitle">
+                Stop guessing where your money went. Easily log daily expenses, set monthly spending limits, categorize transactions, and get instant visual reports in real-time.
+            </p>
+            <div class="hero-cta">
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
+                    </a>
+                    <a href="{{ url_for('reports') }}" class="btn btn-secondary btn-lg">
+                        <i class="fa-solid fa-chart-line"></i> View Monthly Reports
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('registation') }}" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-rocket"></i> Get Started Free
+                    </a>
+                    <a href="{{ url_for('login') }}?demo=1" class="btn btn-secondary btn-lg">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Try Live Demo
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Hero Right Column: Interactive UI Mockup -->
+        <div class="hero-preview">
+            <div class="preview-card">
+                <div class="preview-header">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1rem;">Monthly Overview</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Current Active Cycle</div>
+                    </div>
+                    <span class="preview-chip"><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> Budget: 48% Used</span>
+                </div>
+
+                <div class="preview-balance-box">
+                    <div class="label">Total Spent This Month</div>
+                    <div class="amount">₹ 24,150.00</div>
+                    <div class="preview-progress-bar">
+                        <div class="preview-progress-fill" style="width: 48%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #cbd5e1; margin-top: 0.4rem;">
+                        <span>Target: ₹ 50,000</span>
+                        <span>Remaining: ₹ 25,850</span>
+                    </div>
+                </div>
+
+                <div class="preview-item-list">
+                    <div class="preview-item">
+                        <div class="preview-item-left">
+                            <div class="preview-icon cat-food">
+                                <i class="fa-solid fa-utensils"></i>
+                            </div>
+                            <div>
+                                <div class="preview-title">Dinner at Bistro</div>
+                                <div class="preview-date">Today • Credit Card</div>
+                            </div>
+                        </div>
+                        <div class="preview-amount">- ₹ 1,450.00</div>
+                    </div>
+
+                    <div class="preview-item">
+                        <div class="preview-item-left">
+                            <div class="preview-icon cat-shopping">
+                                <i class="fa-solid fa-bag-shopping"></i>
+                            </div>
+                            <div>
+                                <div class="preview-title">Grocery Supermarket</div>
+                                <div class="preview-date">Yesterday • UPI / GPay</div>
+                            </div>
+                        </div>
+                        <div class="preview-amount">- ₹ 3,200.00</div>
+                    </div>
+
+                    <div class="preview-item">
+                        <div class="preview-item-left">
+                            <div class="preview-icon cat-bills">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div>
+                                <div class="preview-title">Electricity & Internet Bill</div>
+                                <div class="preview-date">2 days ago • Net Banking</div>
+                            </div>
+                        </div>
+                        <div class="preview-amount">- ₹ 2,100.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Bar Section -->
+<section class="stats-bar">
+    <div class="container stats-grid">
+        <div class="stat-box">
+            <h3>100%</h3>
+            <p>Private & Secure Storage</p>
+        </div>
+        <div class="stat-box">
+            <h3>8+</h3>
+            <p>Smart Categories & Badges</p>
+        </div>
+        <div class="stat-box">
+            <h3>Real-time</h3>
+            <p>Visual Charts & Analytics</p>
+        </div>
+        <div class="stat-box">
+            <h3>Instant</h3>
+            <p>CSV & PDF Report Export</p>
+        </div>
+    </div>
+</section>
+
+<!-- Features Grid Section -->
+<section class="features-section" id="features">
+    <div class="section-header">
+        <span class="section-tag">Powerful Features</span>
+        <h2 class="section-title">Everything You Need to Track Money</h2>
+        <p class="section-subtitle">
+            Built from the ground up for speed, simplicity, and actionable financial insights.
+        </p>
+    </div>
+
+    <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+            <div class="feature-icon-wrapper" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h3>Quick Expense Creation</h3>
+            <p>Log transactions in under 5 seconds with custom amounts, notes, payment types, and exact dates.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+            <div class="feature-icon-wrapper" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <h3>Category Breakdown</h3>
+            <p>Understand your spending habits across Food, Rent, Shopping, Bills, Transport, Health, and Entertainment.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+            <div class="feature-icon-wrapper" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fa-solid fa-bullseye"></i>
+            </div>
+            <h3>Monthly Budget Targets</h3>
+            <p>Set a custom monthly limit and monitor real-time progress bars to prevent overspending before month-end.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+            <div class="feature-icon-wrapper" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <h3>Multi-Payment Tracking</h3>
+            <p>Tag expenses by Cash, Credit Card, Debit Card, UPI, or NetBanking to track account balances accurately.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+            <div class="feature-icon-wrapper" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="fa-solid fa-file-csv"></i>
+            </div>
+            <h3>One-Click CSV Export</h3>
+            <p>Download comprehensive transaction spreadsheets for tax calculations or personal Excel archiving.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card">
+            <div class="feature-icon-wrapper" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3>Encrypted & User-Isolated</h3>
+            <p>Each user has a dedicated SQLite database record with SHA-256 password hashing and session tokens.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Workflow Steps Section -->
+<section class="workflow-section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">How It Works</span>
+            <h2 class="section-title">Master Your Money in 3 Easy Steps</h2>
+            <p class="section-subtitle">
+                A streamlined workflow designed to save your time and give you crystal clear financial clarity.
+            </p>
+        </div>
+
+        <div class="workflow-steps-grid">
+            <div class="workflow-card">
+                <div class="step-number">1</div>
+                <h3>Sign Up & Set Target</h3>
+                <p>Register your personal account in seconds and define your preferred currency symbol and monthly budget limit.</p>
+            </div>
+
+            <div class="workflow-card">
+                <div class="step-number">2</div>
+                <h3>Log Daily Expenses</h3>
+                <p>Add expenses whenever you buy food, pay utility bills, or go shopping. Filter and search entries instantly.</p>
+            </div>
+
+            <div class="workflow-card">
+                <div class="step-number">3</div>
+                <h3>Review Visual Reports</h3>
+                <p>Inspect dynamic interactive charts, spot high spending areas, evaluate trends, and export CSV reports.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="cta-section">
+    <div class="cta-banner">
+        <h2>Start Tracking Your Expenses Today</h2>
+        <p>
+            Join thousands of smart individuals who transformed their financial tracking with ExpenseFlow. 100% free to get started.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg" style="background: #fff; color: #1e1b4b;">
+                    <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('registation') }}" class="btn btn-primary btn-lg" style="background: #fff; color: #1e1b4b;">
+                    <i class="fa-solid fa-user-plus"></i> Create Free Account
+                </a>
+                <a href="{{ url_for('login') }}?demo=1" class="btn btn-secondary btn-lg" style="background: transparent; color: #fff; border-color: #a5b4fc;">
+                    <i class="fa-solid fa-key"></i> Instant Demo Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}Monthly Reports & Analytics - ExpenseFlow{% endblock %}
+
+{% block content %}
+<!-- Reports Header -->
+<div class="reports-header">
+    <div>
+        <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">
+            Monthly Financial Report 📊
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Deep-dive visual analytics, daily spending trends, and category distribution for {{ month_label }}.
+        </p>
+    </div>
+
+    <!-- Controls: Month Selector & Export Actions -->
+    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <form method="GET" action="{{ url_for('reports') }}" class="month-picker-form">
+            <i class="fa-regular fa-calendar-days" style="color: var(--primary);"></i>
+            <input type="month" name="month" value="{{ selected_month }}" onchange="this.form.submit()" style="border: none; outline: none; font-weight: 600; font-family: inherit; color: var(--text-main); cursor: pointer;">
+        </form>
+
+        <a href="{{ url_for('export_csv') }}?month={{ selected_month }}" class="btn btn-secondary btn-sm" title="Export this month to CSV">
+            <i class="fa-solid fa-file-csv"></i> Export CSV
+        </a>
+
+        <button type="button" class="btn btn-primary btn-sm" onclick="window.print()" title="Print report summary">
+            <i class="fa-solid fa-print"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<!-- Monthly KPI Summary Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Month Total Spent</span>
+            <div class="kpi-icon" style="background: var(--accent-danger-light); color: var(--accent-danger);">
+                <i class="fa-solid fa-money-bill-transfer"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ user.currency }} {{ "%.2f"|format(monthly_total) }}</div>
+        <div class="kpi-subtext">
+            <span>{{ transactions|length }} logged transactions</span>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Daily Average Spend</span>
+            <div class="kpi-icon" style="background: var(--primary-light); color: var(--primary);">
+                <i class="fa-solid fa-chart-simple"></i>
+            </div>
+        </div>
+        <div class="kpi-value">{{ user.currency }} {{ "%.2f"|format(daily_avg) }}</div>
+        <div class="kpi-subtext">
+            <span>Based on active days</span>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Highest Expense Day</span>
+            <div class="kpi-icon" style="background: var(--accent-warning-light); color: var(--accent-warning);">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+        </div>
+        <div class="kpi-value" style="font-size: 1.5rem;">
+            {{ highest_day[0] if highest_day else 'N/A' }}
+        </div>
+        <div class="kpi-subtext">
+            <span>{{ user.currency }} {{ "%.2f"|format(highest_day[1]) if highest_day else '0.00' }} spent</span>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Budget Remaining</span>
+            <div class="kpi-icon" style="background: var(--accent-success-light); color: var(--accent-success);">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+        </div>
+        <div class="kpi-value" style="color: {{ 'var(--accent-danger)' if remaining_budget < 0 else 'var(--accent-success)' }};">
+            {{ user.currency }} {{ "%.2f"|format(remaining_budget) }}
+        </div>
+        <div class="kpi-subtext">
+            <span>Target: {{ user.currency }} {{ "%.2f"|format(user.monthly_budget) }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Analytics Charts Grid -->
+<div class="charts-grid-2">
+    <!-- Chart 1: Category Breakdown Doughnut -->
+    <div class="content-card">
+        <div class="card-header-bar">
+            <div class="card-title">
+                <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> Category-wise Breakdown
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Percentages of Total</span>
+        </div>
+        <div class="card-body">
+            {% if category_breakdown %}
+                <div class="chart-wrapper">
+                    <canvas id="reportsCategoryChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <p>No transaction data available for this month.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chart 2: Daily Spending Trend Area/Line -->
+    <div class="content-card">
+        <div class="card-header-bar">
+            <div class="card-title">
+                <i class="fa-solid fa-chart-line" style="color: var(--secondary);"></i> Daily Spending Trajectory
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Expenditure by Date</span>
+        </div>
+        <div class="card-body">
+            {% if daily_breakdown %}
+                <div class="chart-wrapper">
+                    <canvas id="reportsDailyTrendChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <p>No daily spending history recorded for this month.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Payment Methods Bar Chart & Details -->
+<div class="charts-grid-2">
+    <!-- Chart 3: Payment Method Distribution -->
+    <div class="content-card">
+        <div class="card-header-bar">
+            <div class="card-title">
+                <i class="fa-solid fa-credit-card" style="color: var(--accent-purple);"></i> Payment Channels
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Amount by Method</span>
+        </div>
+        <div class="card-body">
+            {% if payment_breakdown %}
+                <div class="chart-wrapper">
+                    <canvas id="reportsPaymentChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <p>No payment method records for this period.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Category Spending Table Summary -->
+    <div class="content-card">
+        <div class="card-header-bar">
+            <div class="card-title">
+                <i class="fa-solid fa-table-list" style="color: var(--accent-success);"></i> Category Summary Table
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Total Spent</th>
+                        <th>% Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if category_breakdown %}
+                        {% for cat_name, cat_val in category_breakdown.items() %}
+                            <tr>
+                                <td>
+                                    <span class="category-badge cat-{{ cat_name|lower }}">
+                                        {{ cat_name }}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 700;">
+                                    {{ user.currency }} {{ "%.2f"|format(cat_val) }}
+                                </td>
+                                <td>
+                                    {{ "%.1f"|format((cat_val / monthly_total) * 100) if monthly_total > 0 else 0 }}%
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">No data</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Itemized Monthly Transactions Ledger -->
+<div class="content-card">
+    <div class="card-header-bar">
+        <div class="card-title">
+            <i class="fa-solid fa-list" style="color: var(--primary);"></i> Complete Monthly Ledger ({{ month_label }})
+        </div>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">{{ transactions|length }} items</span>
+    </div>
+    <div class="table-responsive">
+        <table class="expense-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Item Description</th>
+                    <th>Category</th>
+                    <th>Payment Mode</th>
+                    <th>Notes</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transactions %}
+                    {% for item in transactions %}
+                        <tr>
+                            <td style="white-space: nowrap; color: var(--text-muted);">
+                                {{ item.date }}
+                            </td>
+                            <td style="font-weight: 700;">
+                                {{ item.title }}
+                            </td>
+                            <td>
+                                <span class="category-badge cat-{{ item.category|lower }}">
+                                    {{ item.category }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="payment-tag">{{ item.payment_method }}</span>
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">
+                                {{ item.notes if item.notes else '-' }}
+                            </td>
+                            <td class="table-amount" style="text-align: right;">
+                                - {{ user.currency }} {{ "%.2f"|format(item.amount) }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr style="background: #f8fafc; font-weight: 800;">
+                        <td colspan="5" style="text-align: right; text-transform: uppercase; font-size: 0.85rem; color: var(--text-main);">
+                            Month Grand Total:
+                        </td>
+                        <td style="text-align: right; color: var(--accent-danger); font-size: 1.1rem;">
+                            {{ user.currency }} {{ "%.2f"|format(monthly_total) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-calendar-xmark"></i>
+                                <h3>No transactions for {{ month_label }}</h3>
+                                <p>Select another month or log expenses from your dashboard.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chartPalette = [
+        '#6366f1', '#0ea5e9', '#10b981', '#f59e0b',
+        '#ef4444', '#8b5cf6', '#ec4899', '#64748b'
+    ];
+
+    // 1. Category Breakdown Doughnut Chart
+    {% if category_breakdown %}
+    const catLabels = {{ category_breakdown.keys()|list|tojson }};
+    const catValues = {{ category_breakdown.values()|list|tojson }};
+
+    const catCtx = document.getElementById('reportsCategoryChart');
+    if (catCtx) {
+        new Chart(catCtx, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: chartPalette,
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
+                            padding: 14
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: {{ user.currency }} ${context.parsed.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+    {% endif %}
+
+    // 2. Daily Spending Trend Line/Area Chart
+    {% if daily_breakdown %}
+    const dailyLabels = {{ daily_breakdown.keys()|list|tojson }};
+    const dailyValues = {{ daily_breakdown.values()|list|tojson }};
+
+    const dailyCtx = document.getElementById('reportsDailyTrendChart');
+    if (dailyCtx) {
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Daily Spent ({{ user.currency }})',
+                    data: dailyValues,
+                    borderColor: '#0ea5e9',
+                    backgroundColor: 'rgba(14, 165, 233, 0.15)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#0284c7',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            font: { family: 'Plus Jakarta Sans' },
+                            callback: function(val) { return '{{ user.currency }} ' + val; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Plus Jakarta Sans' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    // 3. Payment Method Bar Chart
+    {% if payment_breakdown %}
+    const payLabels = {{ payment_breakdown.keys()|list|tojson }};
+    const payValues = {{ payment_breakdown.values()|list|tojson }};
+
+    const payCtx = document.getElementById('reportsPaymentChart');
+    if (payCtx) {
+        new Chart(payCtx, {
+            type: 'bar',
+            data: {
+                labels: payLabels,
+                datasets: [{
+                    label: 'Amount ({{ user.currency }})',
+                    data: payValues,
+                    backgroundColor: ['#8b5cf6', '#6366f1', '#10b981', '#f59e0b', '#0ea5e9'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            font: { family: 'Plus Jakarta Sans' },
+                            callback: function(val) { return '{{ user.currency }} ' + val; }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Plus Jakarta Sans' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+    {% endif %}
+</script>
+{% endblock %}
