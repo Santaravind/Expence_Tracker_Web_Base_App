@@ -27,7 +27,8 @@
                         <label for="c_name">Your Name</label>
                         <div class="input-icon-wrapper">
                             <i class="fa-solid fa-user"></i>
-                            <input type="text" id="c_name" name="name" class="form-control" placeholder="John Doe" required value="{{ session.get('user_name', '') }}">
+                            <input type="text" id="c_name" name="name" class="form-control" placeholder="John Doe"
+                                required value="{{ session.get('user_name', '') }}">
                         </div>
                     </div>
 
@@ -35,7 +36,8 @@
                         <label for="c_email">Your Email Address</label>
                         <div class="input-icon-wrapper">
                             <i class="fa-solid fa-envelope"></i>
-                            <input type="email" id="c_email" name="email" class="form-control" placeholder="john@example.com" required>
+                            <input type="email" id="c_email" name="email" class="form-control"
+                                placeholder="john@example.com" required>
                         </div>
                     </div>
 
@@ -43,13 +45,16 @@
                         <label for="c_subject">Subject</label>
                         <div class="input-icon-wrapper">
                             <i class="fa-solid fa-heading"></i>
-                            <input type="text" id="c_subject" name="subject" class="form-control" placeholder="e.g. Question about monthly reports" required>
+                            <input type="text" id="c_subject" name="subject" class="form-control"
+                                placeholder="e.g. Question about monthly reports" required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="c_message">Message</label>
-                        <textarea id="c_message" name="message" rows="4" class="form-control no-icon" placeholder="Write your query or feedback here..." required style="resize: vertical;"></textarea>
+                        <textarea id="c_message" name="message" rows="4" class="form-control no-icon"
+                            placeholder="Write your query or feedback here..." required
+                            style="resize: vertical;"></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-full btn-lg">
@@ -69,12 +74,14 @@
                     </div>
                     <div>
                         <h4 style="font-weight: 700;">Headquarters</h4>
-                        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">MCA Department, Flask Labs, India</p>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">MCA Department,Innovation
+                            Lab, Varanasi, India</p>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-                    <div class="logo-icon" style="width: 38px; height: 38px; font-size: 1rem; background: linear-gradient(135deg, #10b981, #059669);">
+                    <div class="logo-icon"
+                        style="width: 38px; height: 38px; font-size: 1rem; background: linear-gradient(135deg, #10b981, #059669);">
                         <i class="fa-solid fa-envelope-open-text"></i>
                     </div>
                     <div>
@@ -84,7 +91,8 @@
                 </div>
 
                 <div style="display: flex; gap: 1rem; align-items: center;">
-                    <div class="logo-icon" style="width: 38px; height: 38px; font-size: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <div class="logo-icon"
+                        style="width: 38px; height: 38px; font-size: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706);">
                         <i class="fa-solid fa-clock"></i>
                     </div>
                     <div>
@@ -98,36 +106,81 @@
             <div class="content-card">
                 <div class="card-header-bar">
                     <div class="card-title">
-                        <i class="fa-solid fa-circle-question" style="color: var(--primary);"></i> Frequently Asked Questions
+                        <i class="fa-solid fa-circle-question" style="color: var(--primary);"></i> Frequently Asked
+                        Questions
                     </div>
                 </div>
-                <div class="card-body" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block; margin-bottom: 0.25rem;">
-                            Is my financial data kept private?
-                        </strong>
-                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">
-                            Yes! All expenses and user accounts are stored in your private local SQLite database.
-                        </p>
-                    </div>
-                    <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
-                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block; margin-bottom: 0.25rem;">
-                            Can I change my budget or currency anytime?
-                        </strong>
-                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">
-                            Yes, click the "Set Budget" button in your dashboard to choose from ₹, $, €, £, and adjust your monthly spending limit.
-                        </p>
-                    </div>
-                    <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
-                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block; margin-bottom: 0.25rem;">
-                            How do I export my monthly data?
-                        </strong>
-                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">
-                            Navigate to Reports and click "Export CSV" to download an Excel-ready spreadsheet of all your entries.
-                        </p>
-                    </div>
+
+                <div class="card-body faq-list">
+                    <details class="faq-item">
+                        <summary>Is my financial data kept private?</summary>
+                        <p>Yes! All expenses and user accounts are stored in your private local SQLite database.</p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Can I change my budget or currency anytime?</summary>
+                        <p>Yes, click the "Set Budget" button in your dashboard to choose from ₹, $, €, £, and adjust
+                            your monthly spending limit.</p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>How do I export my monthly data?</summary>
+                        <p>Navigate to Reports and click "Export CSV" to download an Excel-ready spreadsheet of all your
+                            entries.</p>
+                    </details>
                 </div>
             </div>
+
+            <style>
+                .faq-list {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .faq-item {
+                    border-top: 1px solid var(--border);
+                    padding: 0.75rem 0;
+                }
+
+                .faq-item:first-child {
+                    border-top: none;
+                    padding-top: 0;
+                }
+
+                .faq-item summary {
+                    list-style: none;
+                    /* hide default arrow */
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: var(--text-main);
+                }
+
+                .faq-item summary::-webkit-details-marker {
+                    display: none;
+                    /* Safari/Chrome */
+                }
+
+                .faq-item summary::after {
+                    content: "+";
+                    font-size: 1.2rem;
+                    color: var(--primary);
+                    transition: transform 0.2s ease;
+                }
+
+                .faq-item[open] summary::after {
+                    content: "−";
+                }
+
+                .faq-item p {
+                    font-size: 0.88rem;
+                    color: var(--text-muted);
+                    margin: 0.5rem 0 0;
+                }
+            </style>
         </div>
     </div>
 </div>

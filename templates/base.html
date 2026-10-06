@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ExpenseFlow - Smart Personal Expense Tracker & Monthly Visual Analytics Web Application">
-    <title>{% block title %}ExpenseFlow - Smart Expense Tracker{% endblock %}</title>
+    <meta name="description"
+        content="ExpenseFlow - Smart Personal Expense Tracker & Monthly Visual Analytics Web Application">
+    <title>{% block title %}
+       KharchFlow - Smart Expense Tracker{% endblock %}
+    </title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -22,6 +27,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
     <!-- Top Navigation Bar -->
@@ -32,7 +38,7 @@
                 <div class="logo-icon">
                     <i class="fa-solid fa-wallet"></i>
                 </div>
-                <div class="logo-text">Expense<span>Flow</span></div>
+                <div class="logo-text">Kharcha<span>Pani</span></div>
             </a>
 
             <!-- Mobile Menu Toggle Button -->
@@ -44,19 +50,22 @@
             <nav>
                 <ul class="nav-menu" id="navMenu">
                     <li>
-                        <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
+                        <a href="{{ url_for('home') }}"
+                            class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
                             <i class="fa-solid fa-house"></i> Home
                         </a>
                     </li>
-                    
+
                     {% if session.get('user_id') %}
                     <li>
-                        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <a href="{{ url_for('dashboard') }}"
+                            class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
                             <i class="fa-solid fa-chart-pie"></i> Dashboard
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+                        <a href="{{ url_for('reports') }}"
+                            class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
                             <i class="fa-solid fa-file-invoice-dollar"></i> Reports
                         </a>
                     </li>
@@ -67,12 +76,14 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">
+                        <a href="{{ url_for('about') }}"
+                            class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">
                             <i class="fa-solid fa-circle-info"></i> About
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url_for('contect') }}" class="nav-link {% if request.endpoint == 'contect' %}active{% endif %}">
+                        <a href="{{ url_for('contect') }}"
+                            class="nav-link {% if request.endpoint == 'contect' %}active{% endif %}">
                             <i class="fa-solid fa-envelope"></i> Contact
                         </a>
                     </li>
@@ -83,22 +94,22 @@
             <!-- Header Action Buttons -->
             <div class="nav-actions">
                 {% if session.get('user_id') %}
-                    <div class="user-profile-badge">
-                        <div class="user-avatar">
-                            {{ session.get('user_name', 'U')[0]|upper }}
-                        </div>
-                        <span class="user-name">{{ session.get('user_name', 'User') }}</span>
+                <div class="user-profile-badge">
+                    <div class="user-avatar">
+                        {{ session.get('user_name', 'U')[0]|upper }}
                     </div>
-                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" title="Sign Out">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
-                    </a>
+                    <span class="user-name">{{ session.get('user_name', 'User') }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" title="Sign Out">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </a>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-secondary btn-sm">
-                        <i class="fa-solid fa-right-to-bracket"></i> Login
-                    </a>
-                    <a href="{{ url_for('registation') }}" class="btn btn-primary btn-sm">
-                        <i class="fa-solid fa-user-plus"></i> Sign Up
-                    </a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </a>
+                <a href="{{ url_for('registation') }}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-user-plus"></i> Sign Up
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -109,27 +120,27 @@
         <div class="container">
             <!-- Flash Message Alerts -->
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="alert-container">
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
-                                <div style="display: flex; align-items: center; gap: 0.6rem;">
-                                    {% if category == 'success' %}
-                                        <i class="fa-solid fa-circle-check"></i>
-                                    {% elif category in ['error', 'danger'] %}
-                                        <i class="fa-solid fa-triangle-exclamation"></i>
-                                    {% elif category == 'warning' %}
-                                        <i class="fa-solid fa-circle-exclamation"></i>
-                                    {% else %}
-                                        <i class="fa-solid fa-circle-info"></i>
-                                    {% endif %}
-                                    <span>{{ message }}</span>
-                                </div>
-                                <button type="button" class="alert-close" onclick="this.parentElement.remove();">&times;</button>
-                            </div>
-                        {% endfor %}
+            {% if messages %}
+            <div class="alert-container">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        {% if category == 'success' %}
+                        <i class="fa-solid fa-circle-check"></i>
+                        {% elif category in ['error', 'danger'] %}
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        {% elif category == 'warning' %}
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
                     </div>
-                {% endif %}
+                    <button type="button" class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% endwith %}
 
             <!-- Dynamic Page Content -->
@@ -150,15 +161,19 @@
                         <div class="logo-icon">
                             <i class="fa-solid fa-wallet"></i>
                         </div>
-                        <div class="logo-text">Expense<span>Flow</span></div>
+                        <div class="logo-text">Kharcha<span>Pani</span></div>
                     </a>
                     <p>
-                        A modern, secure and intelligent personal expense tracking tool designed to give you complete clarity over your monthly finances and budgeting goals.
+                        A modern, secure and intelligent personal expense tracking tool designed to give you complete
+                        clarity over your monthly finances and budgeting goals.
                     </p>
                     <div class="social-links">
-                        <a href="https://github.com" target="_blank" class="social-btn" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-                        <a href="https://twitter.com" target="_blank" class="social-btn" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="https://linkedin.com" target="_blank" class="social-btn" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="https://github.com" target="_blank" class="social-btn" aria-label="GitHub"><i
+                                class="fa-brands fa-github"></i></a>
+                        <a href="https://twitter.com" target="_blank" class="social-btn" aria-label="Twitter"><i
+                                class="fa-brands fa-x-twitter"></i></a>
+                        <a href="https://linkedin.com" target="_blank" class="social-btn" aria-label="LinkedIn"><i
+                                class="fa-brands fa-linkedin-in"></i></a>
                     </div>
                 </div>
 
@@ -168,14 +183,18 @@
                     <ul class="footer-links">
                         <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-angle-right"></i> Home</a></li>
                         {% if session.get('user_id') %}
-                        <li><a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-angle-right"></i> Dashboard</a></li>
-                        <li><a href="{{ url_for('reports') }}"><i class="fa-solid fa-angle-right"></i> Monthly Reports</a></li>
+                        <li><a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-angle-right"></i> Dashboard</a>
+                        </li>
+                        <li><a href="{{ url_for('reports') }}"><i class="fa-solid fa-angle-right"></i> Monthly
+                                Reports</a></li>
                         {% else %}
                         <li><a href="{{ url_for('login') }}"><i class="fa-solid fa-angle-right"></i> Sign In</a></li>
-                        <li><a href="{{ url_for('registation') }}"><i class="fa-solid fa-angle-right"></i> Register Account</a></li>
+                        <li><a href="{{ url_for('registation') }}"><i class="fa-solid fa-angle-right"></i> Register
+                                Account</a></li>
                         {% endif %}
                         <li><a href="{{ url_for('about') }}"><i class="fa-solid fa-angle-right"></i> About Us</a></li>
-                        <li><a href="{{ url_for('contect') }}"><i class="fa-solid fa-angle-right"></i> Support & FAQ</a></li>
+                        <li><a href="{{ url_for('contect') }}"><i class="fa-solid fa-angle-right"></i> Support & FAQ</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -183,31 +202,39 @@
                 <div class="footer-col">
                     <h4>Core Features</h4>
                     <ul class="footer-links">
-                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Instant Expense Logging</a></li>
-                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Category Analytics</a></li>
-                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Budget Warning System</a></li>
-                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Monthly PDF & CSV Export</a></li>
-                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Multi-Currency Support</a></li>
+                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Instant
+                                Expense Logging</a></li>
+                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Category
+                                Analytics</a></li>
+                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Budget
+                                Warning System</a></li>
+                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i> Monthly PDF
+                                & CSV Export</a></li>
+                        <li><a href="{{ url_for('home') }}#features"><i class="fa-solid fa-angle-right"></i>
+                                Multi-Currency Support</a></li>
                     </ul>
                 </div>
 
                 <!-- Newsletter / Updates -->
-                <div class="footer-col">
+                <!-- <div class="footer-col">
                     <h4>Stay Financial Smart</h4>
                     <p style="font-size: 0.88rem; margin-bottom: 0.75rem;">
                         Subscribe to get monthly financial budgeting tips and productivity insights.
                     </p>
-                    <form onsubmit="event.preventDefault(); alert('Thank you for subscribing to ExpenseFlow newsletter!');" class="newsletter-box">
+                    <form
+                        onsubmit="event.preventDefault(); alert('Thank you for subscribing to ExpenseFlow newsletter!');"
+                        class="newsletter-box">
                         <input type="email" placeholder="Enter your email" class="newsletter-input" required>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-paper-plane"></i></button>
+                        <button type="submit" class="btn btn-primary btn-sm"><i
+                                class="fa-solid fa-paper-plane"></i></button>
                     </form>
-                </div>
+                </div> -->
             </div>
 
             <!-- Footer Bottom Note -->
             <div class="footer-bottom">
                 <div>&copy; 2026 ExpenseFlow. Designed with modern Flask & Python. All rights reserved.</div>
-                <div>Pair Programming with Advanced Agentic AI</div>
+
             </div>
         </div>
     </footer>
@@ -236,4 +263,5 @@
 
     {% block scripts %}{% endblock %}
 </body>
+
 </html>

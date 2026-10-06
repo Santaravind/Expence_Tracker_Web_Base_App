@@ -9,29 +9,30 @@
         <!-- Hero Left Column: Copy & CTAs -->
         <div class="hero-content">
             <div class="hero-badge">
-                <i class="fa-solid fa-sparkles"></i> Simple • Modern • Free
+                <i class="fa-solid fa-sparkles"></i> Simple  • Modern
             </div>
             <h1 class="hero-title">
                 Smart Expense Tracking for <span>Clear Financial Goals</span>
             </h1>
             <p class="hero-subtitle">
-                Stop guessing where your money went. Easily log daily expenses, set monthly spending limits, categorize transactions, and get instant visual reports in real-time.
+                Stop guessing where your money went. Easily log daily expenses, set monthly spending limits, categorize
+                transactions, and get instant visual reports in real-time.
             </p>
             <div class="hero-cta">
                 {% if session.get('user_id') %}
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
-                        <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
-                    </a>
-                    <a href="{{ url_for('reports') }}" class="btn btn-secondary btn-lg">
-                        <i class="fa-solid fa-chart-line"></i> View Monthly Reports
-                    </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
+                </a>
+                <a href="{{ url_for('reports') }}" class="btn btn-secondary btn-lg">
+                    <i class="fa-solid fa-chart-line"></i> View Monthly Reports
+                </a>
                 {% else %}
-                    <a href="{{ url_for('registation') }}" class="btn btn-primary btn-lg">
-                        <i class="fa-solid fa-rocket"></i> Get Started Free
-                    </a>
-                    <a href="{{ url_for('login') }}?demo=1" class="btn btn-secondary btn-lg">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Try Live Demo
-                    </a>
+                <a href="{{ url_for('registation') }}" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-rocket"></i> Get Started Free
+                </a>
+                <a href="{{ url_for('login') }}?demo=1" class="btn btn-secondary btn-lg">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Try Live Demo
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -44,7 +45,8 @@
                         <div style="font-weight: 700; font-size: 1rem;">Monthly Overview</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted);">Current Active Cycle</div>
                     </div>
-                    <span class="preview-chip"><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> Budget: 48% Used</span>
+                    <span class="preview-chip"><i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> Budget:
+                        48% Used</span>
                 </div>
 
                 <div class="preview-balance-box">
@@ -53,7 +55,8 @@
                     <div class="preview-progress-bar">
                         <div class="preview-progress-fill" style="width: 48%;"></div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #cbd5e1; margin-top: 0.4rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #cbd5e1; margin-top: 0.4rem;">
                         <span>Target: ₹ 50,000</span>
                         <span>Remaining: ₹ 25,850</span>
                     </div>
@@ -152,7 +155,8 @@
                 <i class="fa-solid fa-chart-pie"></i>
             </div>
             <h3>Category Breakdown</h3>
-            <p>Understand your spending habits across Food, Rent, Shopping, Bills, Transport, Health, and Entertainment.</p>
+            <p>Understand your spending habits across Food, Rent, Shopping, Bills, Transport, Health, and Entertainment.
+            </p>
         </div>
 
         <!-- Feature 3 -->
@@ -161,7 +165,8 @@
                 <i class="fa-solid fa-bullseye"></i>
             </div>
             <h3>Monthly Budget Targets</h3>
-            <p>Set a custom monthly limit and monitor real-time progress bars to prevent overspending before month-end.</p>
+            <p>Set a custom monthly limit and monitor real-time progress bars to prevent overspending before month-end.
+            </p>
         </div>
 
         <!-- Feature 4 -->
@@ -170,7 +175,8 @@
                 <i class="fa-solid fa-credit-card"></i>
             </div>
             <h3>Multi-Payment Tracking</h3>
-            <p>Tag expenses by Cash, Credit Card, Debit Card, UPI, or NetBanking to track account balances accurately.</p>
+            <p>Tag expenses by Cash, Credit Card, Debit Card, UPI, or NetBanking to track account balances accurately.
+            </p>
         </div>
 
         <!-- Feature 5 -->
@@ -208,19 +214,22 @@
             <div class="workflow-card">
                 <div class="step-number">1</div>
                 <h3>Sign Up & Set Target</h3>
-                <p>Register your personal account in seconds and define your preferred currency symbol and monthly budget limit.</p>
+                <p>Register your personal account in seconds and define your preferred currency symbol and monthly
+                    budget limit.</p>
             </div>
 
             <div class="workflow-card">
                 <div class="step-number">2</div>
                 <h3>Log Daily Expenses</h3>
-                <p>Add expenses whenever you buy food, pay utility bills, or go shopping. Filter and search entries instantly.</p>
+                <p>Add expenses whenever you buy food, pay utility bills, or go shopping. Filter and search entries
+                    instantly.</p>
             </div>
 
             <div class="workflow-card">
                 <div class="step-number">3</div>
                 <h3>Review Visual Reports</h3>
-                <p>Inspect dynamic interactive charts, spot high spending areas, evaluate trends, and export CSV reports.</p>
+                <p>Inspect dynamic interactive charts, spot high spending areas, evaluate trends, and export CSV
+                    reports.</p>
             </div>
         </div>
     </div>
@@ -231,20 +240,24 @@
     <div class="cta-banner">
         <h2>Start Tracking Your Expenses Today</h2>
         <p>
-            Join thousands of smart individuals who transformed their financial tracking with ExpenseFlow. 100% free to get started.
+            Join thousands of smart individuals who transformed their financial tracking with ExpenseFlow. 100% free to
+            get started.
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             {% if session.get('user_id') %}
-                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg" style="background: #fff; color: #1e1b4b;">
-                    <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
-                </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg"
+                style="background: #fff; color: #1e1b4b;">
+                <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
+            </a>
             {% else %}
-                <a href="{{ url_for('registation') }}" class="btn btn-primary btn-lg" style="background: #fff; color: #1e1b4b;">
-                    <i class="fa-solid fa-user-plus"></i> Create Free Account
-                </a>
-                <a href="{{ url_for('login') }}?demo=1" class="btn btn-secondary btn-lg" style="background: transparent; color: #fff; border-color: #a5b4fc;">
-                    <i class="fa-solid fa-key"></i> Instant Demo Login
-                </a>
+            <a href="{{ url_for('registation') }}" class="btn btn-primary btn-lg"
+                style="background: #fff; color: #1e1b4b;">
+                <i class="fa-solid fa-user-plus"></i> Create Free Account
+            </a>
+            <a href="{{ url_for('login') }}?demo=1" class="btn btn-secondary btn-lg"
+                style="background: transparent; color: #fff; border-color: #a5b4fc;">
+                <i class="fa-solid fa-key"></i> Instant Demo Login
+            </a>
             {% endif %}
         </div>
     </div>
